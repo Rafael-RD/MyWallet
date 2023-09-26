@@ -1,0 +1,43 @@
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mywallet-volume:/data/db
+    networks:
+      - mywallet-network
+    expose:
+      - 27017
+  api:
+    build: api/.
+    image: mywallet-api
+    container_name: mywallet-api
+    networks:
+      - mywallet-network
+    depends_on:
+      - mongodb
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/mywallet
+      - PORT=5000
+    expose:
+      - 5000
+    ports:
+      - 5000:5000
+  webapp:
+    build: webapp/.
+    image: mywallet-webapp
+    container_name: mywallet-webapp
+    networks:
+      - mywallet-network
+    depends_on:
+      - api
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    expose:
+      - 80
+    ports:
+      - 5050:80
+volumes:
+  mywallet-volume:
+networks:
+  mywallet-network:
